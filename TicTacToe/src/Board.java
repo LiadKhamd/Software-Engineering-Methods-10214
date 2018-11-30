@@ -1,9 +1,7 @@
 import javafx.geometry.HPos;
-import javafx.geometry.Pos;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.ColumnConstraintsBuilder;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
+
 import javafx.scene.layout.RowConstraints;
 
 public class Board extends GridPane {

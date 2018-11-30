@@ -1,19 +1,15 @@
-import javax.swing.BorderFactory;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Game extends Stage {
@@ -23,7 +19,9 @@ public class Game extends Stage {
 	private Scene scene;
 	
 	private final double BUTTON_PANE_PRECENT_HEIGHT = 0.1;
-	private final double BOARD_PANE_PRECENT_HEIGHT = 0.9;
+	private final double START_MENU_NAMES_PRECENT_HEIGHT = 0.9;
+	private final double BOARD_PANE_PRECENT_HEIGHT = 0.7;
+	private final double GAME_PLAY_PANEL_PRECENT_HEIGHT = 0.2;
 		
 	private double stageWidth;
 	private double stageHeight;
@@ -43,9 +41,25 @@ public class Game extends Stage {
 	private TextField playerName2Text;
 
 	
+	
+	private Board board;
+	
+	private final Font playerPlayPaneFont = new Font("Serif", 15);
+	private HBox playerPlayPane;
+	
+	private Label playPanelPlayer1Name;
+	private TextField playPanelPlayer1Tiles; 
+	private Button playPanelPlayer1PlayButton;
+	
+	private Label playPanelPlayer2Name;	
+	private TextField playPanelPlayer2Tiles;
+	private Button playPanelPlayer2PlayButton;
+
+	
+
+	
 	private Player player1;
 	private Player player2;
-	private Board board;
 	
 	private VBox menu;
 	
@@ -131,9 +145,20 @@ public class Game extends Stage {
 			
 			@Override
 			public void handle(ActionEvent event) {
+				
+				//TODO maybe add checks on players names
+				player1 = new Player(playerName1Text.getText());
+				player2 = new Player(playerName2Text.getText());
+				
 				menu.getChildren().remove(namePane);
 				initBoard();
+				initplayerPlayPane();
 				menu.getChildren().add(board);
+				menu.getChildren().add(playerPlayPane);
+				
+				//make reset button active after starting game
+				resetGameButton.setDisable(false);
+				
 			}
 		});
 		
@@ -141,10 +166,12 @@ public class Game extends Stage {
 
 			@Override
 			public void handle(ActionEvent event) {
+				//TODO maybe change how this work
 				menu.getChildren().remove(board);
+				menu.getChildren().remove(playerPlayPane);
 				initBoard();
 				menu.getChildren().add(board);
-				
+				menu.getChildren().add(playerPlayPane);
 			}
 		});
 		
@@ -159,7 +186,7 @@ public class Game extends Stage {
 	
 	private void initPlayerNamePane() {
 		double namePaneWidth = this.stageWidth;
-		double namePaneHeight = this.stageHeight * BOARD_PANE_PRECENT_HEIGHT;
+		double namePaneHeight = this.stageHeight * START_MENU_NAMES_PRECENT_HEIGHT;
 		
 		this.namePane = new HBox();
 		this.namePane.setPrefSize(namePaneWidth, namePaneHeight);
@@ -168,8 +195,8 @@ public class Game extends Stage {
 		double innerHBoxPanesWidth = namePaneWidth/2;
 		double innerHBoxPanesHeight = namePaneHeight;
 		
-		this.playerName1Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
-		this.playerName2Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
+		this.playerName1Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10, namePaneFont);
+		this.playerName2Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10, namePaneFont);
 
 		this.playerName1Text = createField("Enter Name",  innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
 		this.playerName2Text = createField("Enter Name",  innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
@@ -186,11 +213,11 @@ public class Game extends Stage {
 		
 	}
 
-	private Label createLabel(String labelText, double width, double height) {
+	private Label createLabel(String labelText, double width, double height, Font font) {
 		Label label = new Label(labelText);
 		label.setPrefSize(width, height);
 		label.setAlignment(Pos.CENTER);
-		label.setFont(namePaneFont);
+		label.setFont(font);
 		label.setStyle("-fx-border-color: black");		
 
 		return label;
@@ -211,4 +238,66 @@ public class Game extends Stage {
 		
 		this.board = new Board(boardWidth, boardHeight);
 	}
+	
+	private void initplayerPlayPane() {
+		this.playerPlayPane = new HBox();
+		double playPlayPaneWidth = this.stageWidth;
+		double playPlayPaneHeight = this.stageHeight * GAME_PLAY_PANEL_PRECENT_HEIGHT;
+		
+		this.playerPlayPane.setPrefSize(playPlayPaneWidth, playPlayPaneHeight);
+		
+		double innerHBoxPanesWidth = playPlayPaneWidth/2;
+		double innerHBoxPanesHeight = playPlayPaneHeight;
+		
+		
+		
+		this.playPanelPlayer1Name = createLabel(player1.getName(),innerHBoxPanesWidth/4 , innerHBoxPanesHeight, playerPlayPaneFont);
+		this.playPanelPlayer1Tiles = createField("enter tile number", innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
+		this.playPanelPlayer1PlayButton = new Button("Play");
+		this.playPanelPlayer1PlayButton.setPrefSize(innerHBoxPanesWidth/4, innerHBoxPanesHeight);;
+		this.playPanelPlayer1PlayButton.setFont(namePaneFont);
+
+		
+		this.playPanelPlayer2Name = createLabel(player2.getName(),innerHBoxPanesWidth/4 , innerHBoxPanesHeight, playerPlayPaneFont);
+		this.playPanelPlayer2Tiles = createField("enter tile number", innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
+		this.playPanelPlayer2PlayButton = new Button("Play");
+		this.playPanelPlayer2PlayButton.setPrefSize(innerHBoxPanesWidth/4, innerHBoxPanesHeight);;
+		this.playPanelPlayer2PlayButton.setFont(namePaneFont);
+		
+		HBox leftPane = new HBox();
+		leftPane.setPrefSize(innerHBoxPanesWidth, playPlayPaneHeight);
+		leftPane.getChildren().addAll(playPanelPlayer1Name, playPanelPlayer1Tiles,playPanelPlayer1PlayButton);
+	
+		HBox rightPane = new HBox();
+		rightPane.setPrefSize(innerHBoxPanesWidth, playPlayPaneHeight);
+		rightPane.getChildren().addAll(playPanelPlayer2Name, playPanelPlayer2Tiles,playPanelPlayer2PlayButton);
+			
+		this.playerPlayPane.getChildren().addAll(leftPane,rightPane);
+		
+		initPlayPanelButton();
+	}
+
+	private void initPlayPanelButton() {
+		this.playPanelPlayer1PlayButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				//TODO extract from playPanelPlayerTile1 the number and active method with it
+				makeMove();
+				
+			}
+		});
+		
+		this.playPanelPlayer2PlayButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				//TODO extract from playPanelPlayerTile2 the number and active method with it
+				makeMove();
+				
+			}
+		});
+	}
+	
+
 }
