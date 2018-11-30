@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -46,7 +47,7 @@ public class Game extends Stage {
 	private Player player2;
 	private Board board;
 	
-	private BorderPane menu;
+	private VBox menu;
 	
 	public Game(int width, int height) {
 		this.stageWidth = width;
@@ -92,14 +93,14 @@ public class Game extends Stage {
 	
 
 	private void initMenu() {
-		this.menu = new BorderPane();
+		this.menu = new VBox();
 		this.menu.setPrefSize(this.getWidth(),this.getHeight());
 		initButtonPane();
-		this.menu.setTop(this.buttonPane);
+		this.menu.getChildren().add(this.buttonPane);
 		//initBoard();
 		//this.menu.setCenter(this.board);
 		initPlayerNamePane();
-		this.menu.setCenter(this.namePane);	
+		this.menu.getChildren().add(this.namePane);	
 	}
 	
 	private void initButtonPane() {
@@ -130,8 +131,9 @@ public class Game extends Stage {
 			
 			@Override
 			public void handle(ActionEvent event) {
-				// TODO remove namePane and add borad
-				
+				menu.getChildren().remove(namePane);
+				initBoard();
+				menu.getChildren().add(board);
 			}
 		});
 		
@@ -139,7 +141,9 @@ public class Game extends Stage {
 
 			@Override
 			public void handle(ActionEvent event) {
-				// TODO reset board
+				menu.getChildren().remove(board);
+				initBoard();
+				menu.getChildren().add(board);
 				
 			}
 		});
