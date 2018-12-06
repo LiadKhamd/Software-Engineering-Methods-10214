@@ -4,36 +4,43 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class Game extends Stage {
-	
-	//for self refrencing inside button action events
-	private final Game me = this;
-	private Scene scene;
-	
+		
 	private final double BUTTON_PANE_PRECENT_HEIGHT = 0.1;
-	private final double START_MENU_NAMES_PRECENT_HEIGHT = 0.9;
+	private final double START_MENU_NAMES_PRECENT_HEIGHT = 0.1;
+	private final double MENU_LOGO_PRECENT_HEIGHT = 0.8;
+	private final String MENU_LOGO_STRING = "TicTacToe";
+	
 	private final double BOARD_PANE_PRECENT_HEIGHT = 0.7;
 	private final double GAME_PLAY_PANEL_PRECENT_HEIGHT = 0.2;
+	
+	
+	private final String NOT_YOUR_TURN = "Not Your Turn!"; 
+	private final String ENTER_TILE_NUMBER = "Enter Tile Number"; 
+	private final String INVALID_NAMES = "Invalid name"; 
+	private final String ENTER_NAME = "Enter Name";
+	private final String PLAYER_NAME = "Player Name: ";
 		
 	private double stageWidth;
 	private double stageHeight;
 	
 	private final int NUM_OF_BUTTON_IN_BUTTON_PANE = 3;
+	// Buttons pane
 	private HBox buttonPane;
-	private Button newGameButton;
+	private Button startPlayingButton;
 	private Button resetGameButton;
 	private Button endGameButton;
 	
-	
-	private final Font namePaneFont = new Font("Serif", 25);
+	// Starting menu Pane
+	private final Font namePaneFont = new Font("Serif", 20);
 	private HBox namePane;
 	private Label playerName1Label;
 	private TextField playerName1Text;
@@ -41,9 +48,11 @@ public class Game extends Stage {
 	private TextField playerName2Text;
 
 	
-	
+	// Board of the game type of pane
 	private Board board;
 	
+	
+	// Players plays pane
 	private final Font playerPlayPaneFont = new Font("Serif", 15);
 	private HBox playerPlayPane;
 	
@@ -54,14 +63,34 @@ public class Game extends Stage {
 	private Label playPanelPlayer2Name;	
 	private TextField playPanelPlayer2Tiles;
 	private Button playPanelPlayer2PlayButton;
-
 	
+	private Label winner;
 
 	
 	private Player player1;
 	private Player player2;
+	private enum Players {
+		PLAYER1, PLAYER2;
+		
+		public char getSymbol() {
+			switch (this) {
+			case PLAYER1:
+				return 'X';
+
+			case PLAYER2:
+				return 'O';
+			}
+			return ' ';
+		}
+	}
 	
-	private VBox menu;
+	private Players currentTurn;
+	private int moveCounter;
+	
+	//VBox API is easier to handle than Stage API and have more functionalities, therefore elements will interact 
+	// with the canvas and not the stage directly.
+	private VBox canvas;
+	private Label menuLogo;
 	
 	public Game(int width, int height) {
 		this.stageWidth = width;
@@ -70,51 +99,156 @@ public class Game extends Stage {
 		this.setMinWidth(this.stageWidth);
 		this.setMinHeight(this.stageHeight);
 		
-		initMenu();
+		initCanvas();
 	
-		Scene scene = new Scene(menu);
+		Scene scene = new Scene(canvas);
 		this.setScene(scene);
 		this.setResizable(false);
 	}
 	
-	
-
-
 	public void resetGame() {
 		
+		if(canvas.getChildren().contains(winner)) {
+			canvas.getChildren().remove(winner);
+		}
+		canvas.getChildren().remove(board);
+		canvas.getChildren().remove(playerPlayPane);
+		initBoard();
+		canvas.getChildren().add(board);
+		canvas.getChildren().add(playerPlayPane);
+		
+		currentTurn = Players.PLAYER1;
+		moveCounter = 0;
 	}
 	
-	public void newGame() {
+	public void startPlaying() {
+		boolean badName = false;
+		if(playerName1Text.getText().equals("") 
+				|| playerName1Text.getText().equals(INVALID_NAMES) 
+				|| playerName1Text.getText().equals(ENTER_NAME)) {
+			playerName1Text.setText(INVALID_NAMES);
+			badName = true;
+		}
+		if(playerName2Text.getText().equals("") 
+				|| playerName2Text.getText().equals(INVALID_NAMES)
+				|| playerName2Text.getText().equals(ENTER_NAME)) {
+			playerName2Text.setText(INVALID_NAMES);
+			badName = true;
+		}
+		
+		if(badName) {
+			return;
+		}
+		
+		
+		player1 = new Player(playerName1Text.getText());
+		player2 = new Player(playerName2Text.getText());
+		
+		currentTurn = Players.PLAYER1;
+		
+		canvas.getChildren().remove(namePane);
+		canvas.getChildren().remove(menuLogo);
+		initBoard();
+		initplayerPlayPane();
+		canvas.getChildren().add(board);
+		canvas.getChildren().add(playerPlayPane);
+		
+		//make reset button active after starting game
+		resetGameButton.setDisable(false);
+		startPlayingButton.setDisable(true);
+		moveCounter = 0;
+	}
+	
+	public void makeMove(Players player) {
+		if(currentTurn == player) {
+			try {
+				int position = checkPlayerText(player);
+				this.board.choosTile(position, player.getSymbol());
+				checkWin();
+				toggleTurn();
+				playPanelPlayer1Tiles.setText(ENTER_TILE_NUMBER);
+				playPanelPlayer2Tiles.setText(ENTER_TILE_NUMBER);
+			} catch (Exception e) {
+				if(player == Players.PLAYER1) {
+					playPanelPlayer1Tiles.setText(e.getMessage());
+				}
+				else {
+					playPanelPlayer2Tiles.setText(e.getMessage());
+				}
+			}
+		}
+		else {
+			if(player == Players.PLAYER1) {
+				playPanelPlayer1Tiles.setText(NOT_YOUR_TURN);
+			}
+			else {
+				playPanelPlayer2Tiles.setText(NOT_YOUR_TURN);
+			}
+		}
+	}
+	
+	private int checkPlayerText(Players player) throws Exception{
+		int number;
+		try {
+			if(player == Players.PLAYER1) {
+				number = Integer.parseInt(playPanelPlayer1Tiles.getText().trim());	
+			}
+			else {
+				number = Integer.parseInt(playPanelPlayer2Tiles.getText().trim());	
+			}
+			return number;
+		}
+		catch(NumberFormatException e){
+			throw new NumberFormatException("Not a Number");
+		}
 		
 	}
-	
-	public void makeMove() {
-		
-	}
-	
+
 	public void endGame() {
-		
+		this.close();
 	}
-	
-	
-	private void checkWin() {
 		
+	private void checkWin() {
+		if(this.board.checkWin()) {
+			String winnerName;
+			if(currentTurn == Players.PLAYER1) {
+				winnerName = playerName1Text.getText();
+			}
+			else {
+				winnerName = playerName2Text.getText();
+			}
+			winner = createLabel("winner is: " + winnerName, this.stageWidth, 
+					this.stageHeight * GAME_PLAY_PANEL_PRECENT_HEIGHT, new Font("Serif", 50));
+
+			canvas.getChildren().remove(playerPlayPane);
+			canvas.getChildren().add(winner);
+		}
+		else if(moveCounter == 9) {
+			winner = createLabel("Draw", this.stageWidth, this.stageHeight * GAME_PLAY_PANEL_PRECENT_HEIGHT, new Font("Serif", 50));
+
+			canvas.getChildren().remove(playerPlayPane);
+			canvas.getChildren().add(winner);
+		}
 	}
 	
 	private void toggleTurn() {
-		
+		if(currentTurn == Players.PLAYER1) {
+			currentTurn = Players.PLAYER2;
+		}
+		else
+			currentTurn = Players.PLAYER1;
 	}
 	
-
-	private void initMenu() {
-		this.menu = new VBox();
-		this.menu.setPrefSize(this.getWidth(),this.getHeight());
-		initButtonPane();
-		this.menu.getChildren().add(this.buttonPane);
-		//initBoard();
-		//this.menu.setCenter(this.board);
+	private void initCanvas() {
+		this.canvas = new VBox();
+		this.canvas.setPrefSize(this.getWidth(),this.getHeight());
+		
+		initButtonPane();	
 		initPlayerNamePane();
-		this.menu.getChildren().add(this.namePane);	
+		this.menuLogo = createLabel(MENU_LOGO_STRING, this.stageWidth, this.stageHeight * MENU_LOGO_PRECENT_HEIGHT, new Font("Serif", 100));
+		
+		this.menuLogo.setStyle("-fx-background-color: lightblue");
+		this.canvas.getChildren().addAll(this.buttonPane, this.namePane, this.menuLogo);		
 	}
 	
 	private void initButtonPane() {
@@ -124,8 +258,8 @@ public class Game extends Stage {
 		
 		this.buttonPane.setPrefSize(buttonPaneWidth, buttonPaneHeight);
 	
-		this.newGameButton = new Button("New Game");
-		this.newGameButton.setPrefSize(buttonPaneWidth/NUM_OF_BUTTON_IN_BUTTON_PANE, buttonPaneHeight);
+		this.startPlayingButton = new Button("Start Playing");
+		this.startPlayingButton.setPrefSize(buttonPaneWidth/NUM_OF_BUTTON_IN_BUTTON_PANE, buttonPaneHeight);
 		
 		this.resetGameButton = new Button("Reset Game");
 		this.resetGameButton.setPrefSize(buttonPaneWidth/NUM_OF_BUTTON_IN_BUTTON_PANE, buttonPaneHeight);
@@ -134,54 +268,18 @@ public class Game extends Stage {
 		this.endGameButton = new Button("End Game");
 		this.endGameButton.setPrefSize(buttonPaneWidth/NUM_OF_BUTTON_IN_BUTTON_PANE, buttonPaneHeight);
 		
-		this.buttonPane.getChildren().addAll(newGameButton, resetGameButton, endGameButton);
+		this.buttonPane.getChildren().addAll(startPlayingButton, resetGameButton, endGameButton);
 		
 		initButtonPaneFunctions();
 	}
 	
 	private void initButtonPaneFunctions() {
 		
-		this.newGameButton.setOnAction(new EventHandler<ActionEvent>() {
-			
-			@Override
-			public void handle(ActionEvent event) {
-				
-				//TODO maybe add checks on players names
-				player1 = new Player(playerName1Text.getText());
-				player2 = new Player(playerName2Text.getText());
-				
-				menu.getChildren().remove(namePane);
-				initBoard();
-				initplayerPlayPane();
-				menu.getChildren().add(board);
-				menu.getChildren().add(playerPlayPane);
-				
-				//make reset button active after starting game
-				resetGameButton.setDisable(false);
-				
-			}
-		});
+		this.startPlayingButton.setOnAction(e -> startPlaying());
 		
-		this.resetGameButton.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				//TODO maybe change how this work
-				menu.getChildren().remove(board);
-				menu.getChildren().remove(playerPlayPane);
-				initBoard();
-				menu.getChildren().add(board);
-				menu.getChildren().add(playerPlayPane);
-			}
-		});
+		this.resetGameButton.setOnAction(e -> resetGame());
 		
-		this.endGameButton.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				me.close();
-			}
-		});
+		this.endGameButton.setOnAction(e -> endGame());
 	}
 	
 	private void initPlayerNamePane() {
@@ -190,17 +288,19 @@ public class Game extends Stage {
 		
 		this.namePane = new HBox();
 		this.namePane.setPrefSize(namePaneWidth, namePaneHeight);
-		this.namePane.setStyle("-fx-background-color: green");
+		this.namePane.setStyle("-fx-background-color: lightblue");
 		
 		double innerHBoxPanesWidth = namePaneWidth/2;
 		double innerHBoxPanesHeight = namePaneHeight;
 		
-		this.playerName1Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10, namePaneFont);
-		this.playerName2Label = createLabel("Player Name: ", innerHBoxPanesWidth/2, innerHBoxPanesHeight/10, namePaneFont);
+		this.playerName1Label = createLabel(PLAYER_NAME, innerHBoxPanesWidth/2, innerHBoxPanesHeight, namePaneFont);
+		this.playerName2Label = createLabel(PLAYER_NAME, innerHBoxPanesWidth/2, innerHBoxPanesHeight, namePaneFont);
 
-		this.playerName1Text = createField("Enter Name",  innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
-		this.playerName2Text = createField("Enter Name",  innerHBoxPanesWidth/2, innerHBoxPanesHeight/10);
+		this.playerName1Text = createField(ENTER_NAME,  innerHBoxPanesWidth/2, innerHBoxPanesHeight);
+		this.playerName2Text = createField(ENTER_NAME,  innerHBoxPanesWidth/2, innerHBoxPanesHeight);
 	
+		initPlayerNameTextFieldClick();
+		
 		HBox leftPane = new HBox();
 		leftPane.setPrefSize(innerHBoxPanesWidth, innerHBoxPanesHeight);
 		leftPane.getChildren().addAll(playerName1Label, playerName1Text);
@@ -212,6 +312,14 @@ public class Game extends Stage {
 		this.namePane.getChildren().addAll(leftPane,rightPane);
 		
 	}
+
+	private void initPlayerNameTextFieldClick() {
+		this.playerName1Text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playerName1Text.clear());	
+		this.playerName2Text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playerName2Text.clear());		
+	}
+
+
+
 
 	private Label createLabel(String labelText, double width, double height, Font font) {
 		Label label = new Label(labelText);
@@ -249,20 +357,20 @@ public class Game extends Stage {
 		double innerHBoxPanesWidth = playPlayPaneWidth/2;
 		double innerHBoxPanesHeight = playPlayPaneHeight;
 		
-		
-		
 		this.playPanelPlayer1Name = createLabel(player1.getName(),innerHBoxPanesWidth/4 , innerHBoxPanesHeight, playerPlayPaneFont);
-		this.playPanelPlayer1Tiles = createField("enter tile number", innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
+		this.playPanelPlayer1Tiles = createField(ENTER_TILE_NUMBER, innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
 		this.playPanelPlayer1PlayButton = new Button("Play");
 		this.playPanelPlayer1PlayButton.setPrefSize(innerHBoxPanesWidth/4, innerHBoxPanesHeight);;
 		this.playPanelPlayer1PlayButton.setFont(namePaneFont);
 
 		
 		this.playPanelPlayer2Name = createLabel(player2.getName(),innerHBoxPanesWidth/4 , innerHBoxPanesHeight, playerPlayPaneFont);
-		this.playPanelPlayer2Tiles = createField("enter tile number", innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
+		this.playPanelPlayer2Tiles = createField(ENTER_TILE_NUMBER, innerHBoxPanesWidth/2 , innerHBoxPanesHeight);
 		this.playPanelPlayer2PlayButton = new Button("Play");
 		this.playPanelPlayer2PlayButton.setPrefSize(innerHBoxPanesWidth/4, innerHBoxPanesHeight);;
 		this.playPanelPlayer2PlayButton.setFont(namePaneFont);
+		
+		initPlayerPanelTextClick();
 		
 		HBox leftPane = new HBox();
 		leftPane.setPrefSize(innerHBoxPanesWidth, playPlayPaneHeight);
@@ -277,14 +385,17 @@ public class Game extends Stage {
 		initPlayPanelButton();
 	}
 
+	private void initPlayerPanelTextClick() {
+		this.playPanelPlayer1Tiles.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playPanelPlayer1Tiles.clear());	
+		this.playPanelPlayer2Tiles.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playPanelPlayer2Tiles.clear());			
+	}
+
 	private void initPlayPanelButton() {
 		this.playPanelPlayer1PlayButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				//TODO extract from playPanelPlayerTile1 the number and active method with it
-				makeMove();
-				
+				makeMove(Players.PLAYER1);		
 			}
 		});
 		
@@ -292,9 +403,7 @@ public class Game extends Stage {
 
 			@Override
 			public void handle(ActionEvent event) {
-				//TODO extract from playPanelPlayerTile2 the number and active method with it
-				makeMove();
-				
+				makeMove(Players.PLAYER2);
 			}
 		});
 	}

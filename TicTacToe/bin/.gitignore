@@ -8,3 +8,8 @@
 /Tile.class
 /Game$4.class
 /Game$5.class
+/Game$Players.class
+/InvalidPositionException.class
+/AlreadyOccupiedException.class
+/exceptions/
+/app/
