@@ -209,6 +209,7 @@ public class Game extends Stage {
 	}
 		
 	private void checkWin() {
+		moveCounter++;
 		if(this.board.checkWin()) {
 			String winnerName;
 			if(currentTurn == Players.PLAYER1) {
@@ -317,9 +318,6 @@ public class Game extends Stage {
 		this.playerName1Text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playerName1Text.clear());	
 		this.playerName2Text.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> playerName2Text.clear());		
 	}
-
-
-
 
 	private Label createLabel(String labelText, double width, double height, Font font) {
 		Label label = new Label(labelText);
