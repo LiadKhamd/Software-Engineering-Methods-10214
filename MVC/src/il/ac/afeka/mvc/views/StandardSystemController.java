@@ -14,9 +14,9 @@ public class StandardSystemController extends Controller {
 
 	public void controlActivity() {
 		
-		if (getView().titleBarContainsPoint(Mouse.instance().cursorPoint())) {
+		if (getView().containsPoint(Mouse.instance().cursorPoint())) {
 	
-			if (Mouse.instance().button1Pressed()) {
+			if (getView().titleBarContainsPoint(Mouse.instance().cursorPoint())&&Mouse.instance().button1Pressed()) {
 				
 				Point origin = Mouse.instance().cursorPoint();
 
@@ -38,6 +38,8 @@ public class StandardSystemController extends Controller {
 				getView().setViewport(getView().getViewport().moveTo(newLocalOrigin)); 
 				
 				getView().getTopView().display();
+				
+				getView().display();
 			}
 
 		}
