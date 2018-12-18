@@ -22,20 +22,9 @@ public class SinView extends View {
 		int ePx = rc.getCorner().getX().intValue();
 
 		ArrayList<Point> p = ((SinModel) model).getFuncCalc(sPx, ePx);
-//		for (int i = 0; i < p.size(); i++) {
-//			if ((sPx + w / 2 + p.get(i).getX()) > sPx && (sPx + w / 2 + p.get(i).getX() < ePx))
-//				Display.instance().drawLine(Color.RED, (int) (sPx + w / 2 + p.get(i).getX()),
-//						(int) (sPy - p.get(i).getY() + 100), (int) (sPx + w / 2 + p.get(i).getX()),
-//						(int) (sPy - p.get(i).getY())+ 100);
-//		}
 		for (Point point : p) {
 			Point t = displayTransformation().applyTo(point);
-			Display.instance().drawLine(Color.RED, t.getX(),t.getY(),t.getX(),t.getY());
+			Display.instance().drawLine(Color.RED, t.getX(), t.getY(), t.getX(), t.getY());
 		}
 	}
-
-	public void setFreq(double f) {
-		((SinModel) model).SetFrequency(f);
-	}
-
 }

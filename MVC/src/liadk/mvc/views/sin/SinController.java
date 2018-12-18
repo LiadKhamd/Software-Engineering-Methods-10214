@@ -17,10 +17,9 @@ public class SinController extends Controller {
 			while (Mouse.instance().button1Pressed()) {
 				delta = Mouse.instance().cursorPoint().subtract(origin);
 				f = Math.abs(Math.min(delta.getX(), delta.getY()));
-				
-				((SinView) getView()).setFreq(f);
-			}
 
+				((SinModel) getModel()).SetFrequency(f);
+			}
 
 			getView().getTopView().display();
 
