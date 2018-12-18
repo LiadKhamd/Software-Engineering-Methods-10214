@@ -18,9 +18,9 @@ public class SinViewDemo {
 					new Rectangle(new Point(100.0, 100.0), new Point(1800.0, 1000.0)));
 			desktop.setBackgroundColor(Color.gray);
 			
-			SinView s1 = new SinView(-450, 450);
+			SinView s1 = new SinView();
 			
-			s1.windowViewport(new Rectangle(new Point(0.0, 0.0), new Point(1.0, 1.0)), new Rectangle(new Point(0.1, 0.1), new Point(0.5,0.5)));
+			s1.windowViewport(new Rectangle(new Point(-3*Math.PI, 2.0), new Point(3*Math.PI, -2.0)), new Rectangle(new Point(0.1, 0.1), new Point(0.5,0.5)));
 			
 			SinModel sinModel = new SinModel();
 			
@@ -30,9 +30,9 @@ public class SinViewDemo {
 			
 			desktop.addSubview(s1);
 			
-			SinView s2 = new SinView(100, 450);
+			SinView s2 = new SinView();
 
-			s2.windowViewport(new Rectangle(new Point(0.0, 0.0), new Point(0.1, 0.1)), new Rectangle(new Point(0.2, 0.6), new Point(0.8,0.9)));
+			s2.windowViewport(new Rectangle(new Point(-Math.PI, 1.5), new Point(8*Math.PI, -1.5)), new Rectangle(new Point(0.2, 0.6), new Point(0.8,0.9)));
 
 			s2.setModel(sinModel);
 			

@@ -23,8 +23,8 @@ public class SinModel extends Model {
 
 	public ArrayList<Point> getFuncCalc(int start, int end) {
 		ArrayList<Point> p = new ArrayList<>();
-		for (double i = start; i <= end; i += 0.5) {
-			p.add(new Point((double) i, 100 * Math.sin(frequency * i * (3.1415926 / 180))));
+		for (double i = start; i <= end; i += 0.02) {
+			p.add(new Point((double) i,  Math.sin(frequency * i)));
 		}
 		return p;
 	}

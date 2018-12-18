@@ -10,39 +10,28 @@ import il.ac.afeka.mvc.View;
 
 public class SinView extends View {
 
-	private int start, end;
-
-	public SinView(int start, int end) {
+	public SinView() {
 		super();
-		this.start = start;
-		this.end = end;
 		setController(new SinController());
 	}
 
 	public void displayView() {
 
-		Rectangle rc = displayBox();
-		double sPx = rc.getOrigin().getX();
-		double sPy = rc.getOrigin().getX();
-		double ePx = rc.getCorner().getX();
-		double w = rc.getWidth();
-		
-		Point cen=rc.getCenter();
+		Rectangle rc = getWindow();
+		int sPx = rc.getOrigin().getX().intValue();
+		int ePx = rc.getCorner().getX().intValue();
 
-		ArrayList<Point> p = ((SinModel) model).getFuncCalc(start, end);
+		ArrayList<Point> p = ((SinModel) model).getFuncCalc(sPx, ePx);
 //		for (int i = 0; i < p.size(); i++) {
 //			if ((sPx + w / 2 + p.get(i).getX()) > sPx && (sPx + w / 2 + p.get(i).getX() < ePx))
 //				Display.instance().drawLine(Color.RED, (int) (sPx + w / 2 + p.get(i).getX()),
 //						(int) (sPy - p.get(i).getY() + 100), (int) (sPx + w / 2 + p.get(i).getX()),
 //						(int) (sPy - p.get(i).getY())+ 100);
 //		}
-		
-		for (int i = 0; i < p.size(); i++) {
-		if ((sPx + w / 2 + p.get(i).getX()) > sPx && (sPx + w / 2 + p.get(i).getX() < ePx))
-			Display.instance().drawLine(Color.RED, (int) (sPx + w / 2 + p.get(i).getX()),
-					(int) (p.get(i).getY() + cen.getY()), (int) (sPx + w / 2 + p.get(i).getX()),
-					(int) (p.get(i).getY()+ cen.getY()));
-	}
+		for (Point point : p) {
+			Point t = displayTransformation().applyTo(point);
+			Display.instance().drawLine(Color.RED, t.getX(),t.getY(),t.getX(),t.getY());
+		}
 	}
 
 	public void setFreq(double f) {
