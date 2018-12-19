@@ -15,7 +15,7 @@ public class SinViewDemo {
 	public static void main(String[] args) {
 		try {
 			View desktop = new View().windowViewport(new Rectangle(new Point(0.0, 0.0), new Point(1.0, 1.0)),
-					new Rectangle(new Point(100.0, 100.0), new Point(1800.0, 1000.0)));
+					new Rectangle(new Point(100.0, 100.0), new Point(1000.0, 600.0)));
 			desktop.setBackgroundColor(Color.gray);
 
 			SinView s1 = new SinView();
